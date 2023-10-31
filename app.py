@@ -1,149 +1,48 @@
-from flask import Flask, request, render_template
-import numpy as np
-import tensorflow as tf
-from tensorflow import keras
-from flask import Flask, jsonify, render_template
-from subprocess import call
-from flask_socketio import SocketIO, send
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat Room</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js"></script>
+</head>
+<body>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            var sock = io.connect('http://127.0.0.1:8080');
+            sock.on('connect', function(){
+                var connect_string = 'new_connect';
+                sock.send(connect_string);
+            });
 
-app = Flask(__name__)
+            sock.on('hello', function(msg){
+                $('#messages').append('<li>' +'>>Hello :'+ msg + '</li>');
+                console.log('Received Hello Message');
+            });
 
-# 예측 모델 로드
-from tensorflow.python.keras.models import load_model
-import numpy as np
+            sock.on('message', function(msg){
+                if(msg.type === 'normal'){
+                    $('#messages').append('>> '+msg.message+'<br>');
+                }else{
+                    $('#messages').append('<li>' + msg.message + '</li>');
+                }
+                console.log('Received Message : '+msg.type);
+            });
 
-rows = np.loadtxt("./lotto.csv", delimiter=",")
-row_count = len(rows)
-# print(row_count)
+            $('#sendbutton').on('click', function(){
+                sock.send($('#myMessage').val());
+                $('#myMessage').val('');
+            });
 
-import numpy as np
-
-# 당첨번호를 원핫인코딩벡터(ohbin)으로 변환
-def numbers2ohbin(numbers):
-
-    ohbin = np.zeros(45) #45개의 빈 칸을 만듬
-
-    for i in range(6): #여섯개의 당첨번호에 대해서 반복함
-        ohbin[int(numbers[i])-1] = 1 #로또번호가 1부터 시작하지만 벡터의 인덱스 시작은 0부터 시작하므로 1을 뺌
-    
-    return ohbin
-
-# 원핫인코딩벡터(ohbin)를 번호로 변환
-def ohbin2numbers(ohbin):
-
-    numbers = []
-    
-    for i in range(len(ohbin)):
-        if ohbin[i] == 1.0: # 1.0으로 설정되어 있으면 해당 번호를 반환값에 추가한다.
-            numbers.append(i+1)
-    
-    return numbers
-
-
-numbers = rows[:, 1:7]
-ohbins = list(map(numbers2ohbin, numbers))
-
-x_samples = ohbins[0:row_count-1]
-y_samples = ohbins[1:row_count]
-
-
-train_idx = (0, 800)
-val_idx = (801, 900)
-test_idx = (901, len(x_samples))
-
-# print("train: {0}, val: {1}, test: {2}".format(train_idx, val_idx, test_idx))
-
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
-from tensorflow.keras import models
-
-mean_prize = [ np.mean(rows[87:, 8]),
-           np.mean(rows[87:, 9]),
-           np.mean(rows[87:, 10]),
-           np.mean(rows[87:, 11]),
-           np.mean(rows[87:, 12])]
-
-print(mean_prize)
-
-def gen_numbers_from_probability(nums_prob):
-
-    ball_box = []
-
-    for n in range(45):
-        ball_count = int(nums_prob[n] * 100 + 1)
-        ball = np.full((ball_count), n+1) 
-        ball_box += list(ball)
-
-    selected_balls = []
-
-    while True:
-        
-        if len(selected_balls) == 6:
-            break
-        
-        ball_index = np.random.randint(len(ball_box), size=1)[0]
-        ball = ball_box[ball_index]
-
-        if ball not in selected_balls:
-            selected_balls.append(ball)
-
-    return selected_balls
-train_total_reward = []
-train_total_grade = np.zeros(6, dtype=int)
-
-val_total_reward = []
-val_total_grade = np.zeros(6, dtype=int)
-
-test_total_reward = []
-test_total_grade = np.zeros(6, dtype=int)
-
-model = keras.models.load_model('./model_0100.h5') 
-
-model.reset_states()
-
-# print('receive numbers')
-
-xs = x_samples[-1].reshape(1, 1, 45)
-ys_pred = model.predict_on_batch(xs)
-
-app.secret_key = "mysecret"
-socket_io = SocketIO(app)
-
-@app.route('/chat',methods=["GET",'POST'])
-def chatting():
-    return render_template('chat.html')
-
-@socket_io.on("message")
-def request(message):
-    print("message : "+ message)
-    to_client = dict()
-    if message == 'new_connect':
-        to_client['message'] = "메세지를 입력해주세요!!"
-        to_client['type'] = 'connect'
-    else:
-        to_client['message'] = message
-        to_client['type'] = 'normal'
-    # # emit("response", {'data': message['data'], 'username': session['username']}, broadcast=True)
-    socket_io.send(to_client, broadcast=True)
-
-@app.route('/',methods=["GET",'POST'])
-def home():
-    return render_template('index.html')
-
-@app.route('/predict', methods=["GET",'POST'])
-def predict():
-    try:
-        list_numbers = []
-        for n in range(5):
-            numbers = gen_numbers_from_probability(ys_pred[0])
-            numbers.sort()
-            print('{0} : {1}'.format(n, numbers))
-            list_numbers.append(numbers)
-        return render_template('result.html', list_numbers=list_numbers)
-    except Exception as e:
-        return str(e)
-
-if __name__ == '__main__':
-    socket_io.run(app, debug=True, port=8080)
-    # app.run(debug=True,port=8080,use_reloader=False)
+            $('#myMessage').on('keyup', function(event){
+                if (event.key === "Enter") {
+                    $('#sendbutton').click();
+                }
+            });
+        });
+    </script>
+    <ul id="messages"></ul>
+    <input type="text" id="myMessage">
+    <button id="sendbutton">Send</button>
+</body>
+</html>
