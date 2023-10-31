@@ -119,7 +119,7 @@ def request(message):
     print("message : "+ message)
     to_client = dict()
     if message == 'new_connect':
-        to_client['message'] = "메세지를 입력해주세요!!"
+        to_client['message'] = "폭언 욕설은 험한 말씀은 자제해 주세요^^"
         to_client['type'] = 'connect'
     else:
         to_client['message'] = message
