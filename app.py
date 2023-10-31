@@ -6,10 +6,7 @@ from flask import Flask, jsonify, render_template
 from subprocess import call
 from flask_socketio import SocketIO, send
 
-
 app = Flask(__name__)
-app.secret_key = "mysecret"
-socket_io = SocketIO(app)
 
 # 예측 모델 로드
 from tensorflow.python.keras.models import load_model
@@ -61,7 +58,6 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras import models
 
-# 88회부터 지금까지 1등부터 5등까지 상금의 평균낸다.
 mean_prize = [ np.mean(rows[87:, 8]),
            np.mean(rows[87:, 9]),
            np.mean(rows[87:, 10]),
@@ -76,7 +72,7 @@ def gen_numbers_from_probability(nums_prob):
 
     for n in range(45):
         ball_count = int(nums_prob[n] * 100 + 1)
-        ball = np.full((ball_count), n+1) #1부터 시작
+        ball = np.full((ball_count), n+1) 
         ball_box += list(ball)
 
     selected_balls = []
@@ -111,11 +107,10 @@ model.reset_states()
 xs = x_samples[-1].reshape(1, 1, 45)
 ys_pred = model.predict_on_batch(xs)
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+app.secret_key = "mysecret"
+socket_io = SocketIO(app)
 
-@app.route('/chat')
+@app.route('/chat',methods=["GET",'POST'])
 def chatting():
     return render_template('chat.html')
 
@@ -129,11 +124,14 @@ def request(message):
     else:
         to_client['message'] = message
         to_client['type'] = 'normal'
-    # emit("response", {'data': message['data'], 'username': session['username']}, broadcast=True)
-    send(to_client, broadcast=True)
+    # # emit("response", {'data': message['data'], 'username': session['username']}, broadcast=True)
+    socket_io.send(to_client, broadcast=True)
 
+@app.route('/',methods=["GET",'POST'])
+def home():
+    return render_template('index.html')
 
-@app.route('/predict', methods=['POST'])
+@app.route('/predict', methods=["GET",'POST'])
 def predict():
     try:
         list_numbers = []
@@ -142,11 +140,10 @@ def predict():
             numbers.sort()
             print('{0} : {1}'.format(n, numbers))
             list_numbers.append(numbers)
-
         return render_template('result.html', list_numbers=list_numbers)
-
     except Exception as e:
         return str(e)
 
 if __name__ == '__main__':
-    app.run(debug=True,port=8080)
+    socket_io.run(app, debug=True, port=8080)
+    # app.run(debug=True,port=8080,use_reloader=False)
