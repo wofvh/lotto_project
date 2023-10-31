@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>로또 예측 결과</title>
+</head>
+<body>
+    <h1>로또 예측 결과</h1>
+    <form action="/predict" method="post">
+        <label for="feature2">lucky number</label>
+        <input type="text" name="feature2" id="feature2"><br><br>
+        <input type="submit" value="click"><br><br>
+    </form>
+    {% if prediction %}
+        <h2>모델 예측 결과:</h2>
+        <p>결과: {{ prediction }}</p>
+    {% endif %}
+
+    <div id="result" style="display: none;">
+        <h2>추가 기능 결과:</h2>
+        <p id="additionalResult"></p>
+    </div>
+
+    
+    <button id="chatButton">채팅방으로 이동</button>
+    <script>
+        document.getElementById("chatButton").addEventListener("click", function() {
+            // "채팅방으로 이동" 버튼 클릭 시 이벤트 처리
+            window.location.href = "/chat"; // "chat.html"는 채팅 페이지의 파일 경로입니다.
+        });
+    </script>
+</body>
+</html>
