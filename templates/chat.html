@@ -22,7 +22,7 @@
 
             sock.on('message', function(msg){
                 if(msg.type === 'normal'){
-                    $('#messages').append('>> '+msg.message+'<br>');
+                    $('#messages').append('이름:'+msg.message+'<br>');
                 }else{
                     $('#messages').append('<li>' + msg.message + '</li>');
                 }
