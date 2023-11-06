@@ -107,8 +107,9 @@ model.reset_states()
 xs = x_samples[-1].reshape(1, 1, 45)
 ys_pred = model.predict_on_batch(xs)
 
-app.secret_key = "mysecret"
+app.secret_key = "teddykey"
 socket_io = SocketIO(app)
+
 
 @app.route('/chat',methods=["GET",'POST'])
 def chatting():
@@ -142,7 +143,8 @@ def predict():
             list_numbers.append(numbers)
         return render_template('result.html', list_numbers=list_numbers)
     except Exception as e:
-        return str(e)
+        # print("Json data: ", jsonify(str(e)))
+        return jsonify(str(e))
 
 if __name__ == '__main__':
     socket_io.run(app, debug=True, port=8080)
