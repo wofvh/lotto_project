@@ -8,7 +8,7 @@
     <form action="/predict" method="post">
         <label for="feature2">lucky number</label>
         <input type="text" name="feature2" id="feature2"><br><br>
-        <input type="submit" value="click"><br><br>
+        <input type="submit" value="번호받기"><br><br>
     </form>
     {% if prediction %}
         <h2>모델 예측 결과:</h2>
@@ -21,7 +21,7 @@
     </div>
 
     
-    <button id="chatButton">채팅방으로 이동</button>
+    <button id="chatButton">comment</button>
     <script>
         document.getElementById("chatButton").addEventListener("click", function() {
             // "채팅방으로 이동" 버튼 클릭 시 이벤트 처리
