@@ -3,4 +3,4 @@ app.py 실행
 
 tensorflow
 flask 
-flask_socat
+
