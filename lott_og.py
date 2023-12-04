@@ -316,11 +316,8 @@ for epoch in range(100):
     # 마지막 회차까지 학습한 모델로 다음 회차 추론
 
 print('receive numbers')
-
 xs = x_samples[-1].reshape(1, 1, 45)
-
 ys_pred = model.predict_on_batch(xs)
-
 list_numbers = []
 
 for n in range(10):
